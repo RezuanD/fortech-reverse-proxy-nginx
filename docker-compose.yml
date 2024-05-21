@@ -5,24 +5,16 @@ services:
     ports:
       - 80:80
       - 443:443
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./nginx/:/etc/nginx/
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
-    networks:
-      - nginx-proxy
   certbot:
     container_name: certbot
     image: certbot/certbot:latest
+    restart: unless-stopped
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot -q; sleep 12h & wait $${!}; done;'"
-    networks:
-      - nginx-proxy
-
-networks:
-  nginx-proxy:
-    name: nginx-proxy
-    external: true
